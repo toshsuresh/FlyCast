@@ -1,0 +1,16 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Flight Delay Predictor</title>
+</head>
+<body>
+    <h1>Check if your flight will be delayed</h1>
+    <form action="/predict" method="post">
+        <label for="flight_number">Flight Number:</label>
+        <input type="text" id="flight_number" name="flight_number"><br><br>
+        <label for="date">Date:</label>
+        <input type="date" id="date" name="date"><br><br>
+        <input type="submit" value="Predict Delay">
+    </form>
+</body>
+</html>
