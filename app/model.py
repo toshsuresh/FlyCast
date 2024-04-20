@@ -1,43 +1,40 @@
 import pandas as pd
 from sklearn.model_selection import train_test_split
 from sklearn.ensemble import RandomForestRegressor
-from sklearn.metrics import mean_squared_error
 from sklearn.preprocessing import StandardScaler
-import numpy as np
+import pickle
 
-# Load data
-def load_data():
-    data = pd.read_csv('path_to_your_csv/flight_weather_data.csv')
+def load_data(filepath):
+    # Load the dataset
+    data = pd.read_csv(filepath)
     return data
 
-# Preprocess and split the data
-def preprocess_data(data):
-    # Fill missing values if any
-    data = data.fillna(method='ffill')
-    
+def preprocess_and_split(data):
+    # Handle missing values and scale the data
+    data.fillna(0, inplace=True)
     X = data[['HourlyDryBulbTemperature_x', 'HourlyPrecipitation_x', 'HourlyStationPressure_x', 'HourlyVisibility_x', 'HourlyWindSpeed_x']]
     y = data['departure_delay']
     
-    # Normalize features
     scaler = StandardScaler()
     X_scaled = scaler.fit_transform(X)
-    
-    return train_test_split(X_scaled, y, test_size=0.2, random_state=42)
+    return train_test_split(X_scaled, y, test_size=0.2, random_state=42), scaler
 
-# Train the model
 def train_model(X_train, y_train):
+    # Train a RandomForest model
     model = RandomForestRegressor(n_estimators=100, random_state=42)
     model.fit(X_train, y_train)
     return model
 
-# Predict delay
-def predict_delay(model, X):
-    predicted_delay = model.predict(X)
-    return predicted_delay
+def save_model_and_scaler(model, scaler, model_path='model.pkl', scaler_path='scaler.pkl'):
+    # Save the trained model and scaler for later use
+    with open(model_path, 'wb') as f:
+        pickle.dump(model, f)
+    with open(scaler_path, 'wb') as f:
+        pickle.dump(scaler, f)
 
-# Example usage in your app
-data = load_data()
-X_train, X_test, y_train, y_test = preprocess_data(data)
-model = train_model(X_train, y_train)
-
-# Now you can use 'model' to predict using new data processed similarly to X_test
+# This block is used to prepare the model initially
+if __name__ == "__main__":
+    data = load_data('path_to_your_csv_file.csv')
+    (X_train, X_test, y_train, y_test), scaler = preprocess_and_split(data)
+    model = train_model(X_train, y_train)
+    save_model_and_scaler(model, scaler)
