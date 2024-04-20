@@ -4,11 +4,19 @@ import pickle
 
 main = Blueprint('main', __name__)
 
-# Load the model and scaler from the saved files
-with open('model.pkl', 'rb') as model_file:
-    model = pickle.load(model_file)
-with open('scaler.pkl', 'rb') as scaler_file:
-    scaler = pickle.load(scaler_file)
+# Set the base directory to point to the SkyCast directory
+base_dir = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+
+# Paths for model and scaler
+model_path = os.path.join(base_dir, 'model.pkl')
+scaler_path = os.path.join(base_dir, 'scaler.pkl')
+
+# Function to load model and scaler
+def load_model_scaler():
+    with open(model_path, 'rb') as model_file:
+        model = pickle.load(model_file)
+    with open(scaler_path, 'rb') as scaler_file:
+        scaler = pickle.load(scaler_file)
 
 @main.route('/')
 def index():
@@ -34,5 +42,7 @@ def predict():
         # Return the prediction result as JSON
         return jsonify({"status": "success", "predicted_delay_minutes": predicted_delay})
     except Exception as e:
-        return jsonify({"status": "error", "message": str(e)})
+        # It's good practice to log the actual error also
+        print("An error occurred:", str(e))
+        return jsonify({"status": "error", "message": "An error occurred during processing."})
 

@@ -5,8 +5,10 @@ from sklearn.preprocessing import StandardScaler
 import pickle
 
 def load_data(filepath='data/flight_weather_data.csv'):
-    # Load the dataset
-    data = pd.read_csv(filepath)
+    # Get the directory where this script resides
+    base_dir = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))  # This points to '/workspaces/SkyCast'
+    full_path = os.path.join(base_dir, filepath)  # Construct the full path to the CSV
+    data = pd.read_csv(full_path)
     return data
 
 def preprocess_and_split(data):
@@ -26,13 +28,17 @@ def train_model(X_train, y_train):
     return model
 
 def save_model_and_scaler(model, scaler, model_path='model.pkl', scaler_path='scaler.pkl'):
-    # Save the trained model and scaler for later use
-    with open(model_path, 'wb') as f:
+    # Get the directory where this script resides
+    base_dir = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))  # This points to '/workspaces/SkyCast'
+    full_model_path = os.path.join(base_dir, model_path)  # Save in the root directory
+    full_scaler_path = os.path.join(base_dir, scaler_path)  # Save in the root directory
+
+    with open(full_model_path, 'wb') as f:
         pickle.dump(model, f)
-    with open(scaler_path, 'wb') as f:
+    with open(full_scaler_path, 'wb') as f:
         pickle.dump(scaler, f)
 
-# This block is used to prepare the model initially
+# This block is at the end of your model.py
 if __name__ == "__main__":
     data = load_data()
     (X_train, X_test, y_train, y_test), scaler = preprocess_and_split(data)
