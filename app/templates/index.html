@@ -2,21 +2,126 @@
 <html>
 <head>
     <title>Flight Delay Predictor</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f2f2f2;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            margin: 0;
+        }
+
+        .container {
+            background-color: #fff;
+            padding: 30px;
+            border-radius: 10px;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.2);
+            text-align: center;
+            animation: fadeIn 1s ease;
+        }
+
+        h1 {
+            color: #333;
+            animation: slideInDown 1s ease;
+        }
+
+        label {
+            font-weight: bold;
+        }
+
+        input[type="text"], input[type="datetime-local"] {
+            padding: 8px;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+            width: 200px;
+        }
+
+        input[type="submit"] {
+            background-color: #4CAF50;
+            color: white;
+            padding: 10px 20px;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            margin-top: 10px;
+            animation: pulse 1s infinite;
+        }
+
+        #result {
+            margin-top: 20px;
+            font-weight: bold;
+            color: #333;
+            animation: fadeIn 1s ease;
+        }
+
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+            }
+            to {
+                opacity: 1;
+            }
+        }
+
+        @keyframes slideInDown {
+            from {
+                transform: translateY(-100%);
+            }
+            to {
+                transform: translateY(0);
+            }
+        }
+
+        @keyframes pulse {
+            0% {
+                transform: scale(1);
+            }
+            50% {
+                transform: scale(1.1);
+            }
+            100% {
+                transform: scale(1);
+            }
+        }
+    </style>
 </head>
 <body>
-    <h1>Check if your flight will be delayed</h1>
-    <form action="/predict" method="post">
-        <label for="temperature">Temperature:</label>
-        <input type="text" id="temperature" name="temperature"><br><br>
-        <label for="precipitation">Precipitation:</label>
-        <input type="text" id="precipitation" name="precipitation"><br><br>
-        <label for="pressure">Pressure:</label>
-        <input type="text" id="pressure" name="pressure"><br><br>
-        <label for="visibility">Visibility:</label>
-        <input type="text" id="visibility" name="visibility"><br><br>
-        <label for="windspeed">Wind Speed:</label>
-        <input type="text" id="windspeed" name="windspeed"><br><br>
-        <input type="submit" value="Predict Delay">
-    </form>
+    <div class="container">
+        <h1>SkyCast:</h1>
+        <h1>Check if your flight will be delayed</h1>
+        <form id="predict-form">
+            <label for="city">City:</label>
+            <input type="text" id="city" name="city"><br><br>
+            <label for="departure_time">Departure Time:</label>
+            <input type="datetime-local" id="departure_time" name="departure_time"><br><br>
+            <input type="submit" value="Predict Delay">
+        </form>
+        <div id="result"></div>
+    </div>
+    <script>
+        const form = document.getElementById('predict-form');
+        const resultDiv = document.getElementById('result');
+        form.addEventListener('submit', async (event) => {
+            event.preventDefault();
+            const city = document.getElementById('city').value;
+            const departureTime = document.getElementById('departure_time').value;
+            try {
+                const response = await fetch('/predict', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({ city, departure_time: departureTime })
+                });
+                const data = await response.json();
+                resultDiv.textContent = `Prediction: ${data.delayed_minutes} minutes delay`;
+            } catch (error) {
+                console.error('Error:', error);
+                resultDiv.textContent = 'Failed to predict the delay. Please try again.';
+            }
+        });
+    </script>
 </body>
 </html>

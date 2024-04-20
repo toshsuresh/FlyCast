@@ -4,6 +4,7 @@ from sklearn.model_selection import train_test_split
 from sklearn.ensemble import RandomForestRegressor
 from sklearn.metrics import mean_squared_error
 import joblib
+from sklearn.preprocessing import StandardScaler  # Import StandardScaler
 
 # Load data and train model
 def load_and_train():
@@ -15,11 +16,15 @@ def load_and_train():
     features = df[['HourlyDryBulbTemperature_x', 'HourlyPrecipitation_x', 'HourlyStationPressure_x', 'HourlyVisibility_x', 'HourlyWindSpeed_x']]
     target = df['departure_delay']
 
+    # Normalize/scale the input features
+    scaler = StandardScaler()
+    features_scaled = scaler.fit_transform(features)
+
     # Split the data into training and test sets
-    X_train, X_test, y_train, y_test = train_test_split(features, target, test_size=0.2, random_state=42)
+    X_train, X_test, y_train, y_test = train_test_split(features_scaled, target, test_size=0.2, random_state=42)
 
     # Train the model
-    model = RandomForestRegressor(n_estimators=100, random_state=42)
+    model = RandomForestRegressor(n_estimators=200, max_depth=10, random_state=42)  # Adjust parameters
     model.fit(X_train, y_train)
 
     # Save the model to disk
