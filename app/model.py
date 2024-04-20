@@ -3,42 +3,44 @@ import pandas as pd
 from sklearn.model_selection import train_test_split
 from sklearn.ensemble import RandomForestRegressor
 from sklearn.metrics import mean_squared_error
+from sklearn.preprocessing import StandardScaler
 import joblib
-from sklearn.preprocessing import StandardScaler  # Import StandardScaler
 
-# Load data and train model
 def load_and_train():
-    # Get the path to the CSV file relative to the app directory
     csv_path = os.path.join(os.path.dirname(__file__), 'flight_weather_data.csv')
-
-    # Load the data
     df = pd.read_csv(csv_path)
     features = df[['HourlyDryBulbTemperature_x', 'HourlyPrecipitation_x', 'HourlyStationPressure_x', 'HourlyVisibility_x', 'HourlyWindSpeed_x']]
     target = df['departure_delay']
 
-    # Normalize/scale the input features
     scaler = StandardScaler()
     features_scaled = scaler.fit_transform(features)
-
-    # Split the data into training and test sets
     X_train, X_test, y_train, y_test = train_test_split(features_scaled, target, test_size=0.2, random_state=42)
 
-    # Train the model
-    model = RandomForestRegressor(n_estimators=200, max_depth=10, random_state=42)  # Adjust parameters
+    model = RandomForestRegressor(n_estimators=200, max_depth=10, random_state=42)
     model.fit(X_train, y_train)
 
-    # Save the model to disk
-    joblib.dump(model, 'flight_delay_predictor_model.pkl')
+    joblib.dump(model, os.path.join(os.path.dirname(__file__), 'flight_delay_predictor_model.pkl'))
+    joblib.dump(scaler, os.path.join(os.path.dirname(__file__), 'scaler.pkl'))
 
-    # Evaluate the model
-    y_pred = model.predict(X_test)
-    mse = mean_squared_error(y_test, y_pred)
+    mse = mean_squared_error(y_test, model.predict(X_test))
     print("Mean Squared Error:", mse)
 
-# Function to predict delay
 def predict_delay(features):
-    # Load trained model from disk
-    model = joblib.load('flight_delay_predictor_model.pkl')
-    # Predict using the model
-    predicted_delay = model.predict([features])
+    model_path = os.path.join(os.path.dirname(__file__), 'flight_delay_predictor_model.pkl')
+    scaler_path = os.path.join(os.path.dirname(__file__), 'scaler.pkl')
+
+    if not os.path.exists(model_path) or not os.path.exists(scaler_path):
+        return "Model or scaler file does not exist."
+
+    model = joblib.load(model_path)
+    scaler = joblib.load(scaler_path)
+
+    # Ensure feature names match training data
+    feature_names = ['HourlyDryBulbTemperature_x', 'HourlyPrecipitation_x', 'HourlyStationPressure_x', 'HourlyVisibility_x', 'HourlyWindSpeed_x']
+    features_df = pd.DataFrame([features], columns=feature_names)
+
+    # Scale features
+    features_scaled = scaler.transform(features_df)
+    
+    predicted_delay = model.predict(features_scaled)
     return predicted_delay

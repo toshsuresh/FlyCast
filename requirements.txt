@@ -2,6 +2,6 @@ Flask
 pandas
 scikit-learn
 joblib
-react
 requests
 geopy
+flask-cors  

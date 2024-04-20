@@ -3,8 +3,6 @@ from app.model import load_and_train
 
 app = create_app()
 
-# Ensure the model is trained and saved before starting the app
-load_and_train()
-
 if __name__ == '__main__':
+    load_and_train()  # Ensure this is called
     app.run(debug=True)
