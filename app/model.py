@@ -4,7 +4,7 @@ from sklearn.ensemble import RandomForestRegressor
 from sklearn.preprocessing import StandardScaler
 import pickle
 
-def load_data(filepath):
+def load_data(filepath='data/flight_weather_data.csv'):
     # Load the dataset
     data = pd.read_csv(filepath)
     return data
@@ -34,7 +34,7 @@ def save_model_and_scaler(model, scaler, model_path='model.pkl', scaler_path='sc
 
 # This block is used to prepare the model initially
 if __name__ == "__main__":
-    data = load_data('path_to_your_csv_file.csv')
+    data = load_data()
     (X_train, X_test, y_train, y_test), scaler = preprocess_and_split(data)
     model = train_model(X_train, y_train)
     save_model_and_scaler(model, scaler)
