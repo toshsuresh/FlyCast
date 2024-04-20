@@ -1,22 +1,7 @@
 from flask import Blueprint, render_template, request, jsonify
-import numpy as np
-import pickle
+from .model import predict_delay  # Ensure we're importing the correct functions
 
 main = Blueprint('main', __name__)
-
-# Set the base directory to point to the SkyCast directory
-base_dir = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
-
-# Paths for model and scaler
-model_path = os.path.join(base_dir, 'model.pkl')
-scaler_path = os.path.join(base_dir, 'scaler.pkl')
-
-# Function to load model and scaler
-def load_model_scaler():
-    with open(model_path, 'rb') as model_file:
-        model = pickle.load(model_file)
-    with open(scaler_path, 'rb') as scaler_file:
-        scaler = pickle.load(scaler_file)
 
 @main.route('/')
 def index():
@@ -24,25 +9,18 @@ def index():
 
 @main.route('/predict', methods=['POST'])
 def predict():
-    try:
-        # Extract features from the form
-        temperature = float(request.form['temperature'])
-        precipitation = float(request.form['precipitation'])
-        pressure = float(request.form['pressure'])
-        visibility = float(request.form['visibility'])
-        windspeed = float(request.form['windspeed'])
-        
-        # Create a feature array and scale it
-        features = np.array([[temperature, precipitation, pressure, visibility, windspeed]])
-        features_scaled = scaler.transform(features)
-        
-        # Predict delay using the scaled features
-        predicted_delay = model.predict(features_scaled)[0]
-        
-        # Return the prediction result as JSON
-        return jsonify({"status": "success", "predicted_delay_minutes": predicted_delay})
-    except Exception as e:
-        # It's good practice to log the actual error also
-        print("An error occurred:", str(e))
-        return jsonify({"status": "error", "message": "An error occurred during processing."})
+    # Get data from form
+    temperature = request.form['temperature']
+    precipitation = request.form['precipitation']
+    pressure = request.form['pressure']
+    visibility = request.form['visibility']
+    windspeed = request.form['windspeed']
 
+    # Convert data to floats and create a features list
+    features = [float(temperature), float(precipitation), float(pressure), float(visibility), float(windspeed)]
+    
+    # Predict delay
+    delay_minutes = predict_delay(features)
+    
+    # Return the result
+    return jsonify({"status": "success", "delayed_minutes": delay_minutes[0]})

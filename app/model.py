@@ -1,46 +1,39 @@
+import os
 import pandas as pd
 from sklearn.model_selection import train_test_split
 from sklearn.ensemble import RandomForestRegressor
-from sklearn.preprocessing import StandardScaler
-import pickle
+from sklearn.metrics import mean_squared_error
+import joblib
 
-def load_data(filepath='data/flight_weather_data.csv'):
-    # Get the directory where this script resides
-    base_dir = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))  # This points to '/workspaces/SkyCast'
-    full_path = os.path.join(base_dir, filepath)  # Construct the full path to the CSV
-    data = pd.read_csv(full_path)
-    return data
+# Load data and train model
+def load_and_train():
+    # Get the path to the CSV file relative to the app directory
+    csv_path = os.path.join(os.path.dirname(__file__), 'flight_weather_data.csv')
 
-def preprocess_and_split(data):
-    # Handle missing values and scale the data
-    data.fillna(0, inplace=True)
-    X = data[['HourlyDryBulbTemperature_x', 'HourlyPrecipitation_x', 'HourlyStationPressure_x', 'HourlyVisibility_x', 'HourlyWindSpeed_x']]
-    y = data['departure_delay']
-    
-    scaler = StandardScaler()
-    X_scaled = scaler.fit_transform(X)
-    return train_test_split(X_scaled, y, test_size=0.2, random_state=42), scaler
+    # Load the data
+    df = pd.read_csv(csv_path)
+    features = df[['HourlyDryBulbTemperature_x', 'HourlyPrecipitation_x', 'HourlyStationPressure_x', 'HourlyVisibility_x', 'HourlyWindSpeed_x']]
+    target = df['departure_delay']
 
-def train_model(X_train, y_train):
-    # Train a RandomForest model
+    # Split the data into training and test sets
+    X_train, X_test, y_train, y_test = train_test_split(features, target, test_size=0.2, random_state=42)
+
+    # Train the model
     model = RandomForestRegressor(n_estimators=100, random_state=42)
     model.fit(X_train, y_train)
-    return model
 
-def save_model_and_scaler(model, scaler, model_path='model.pkl', scaler_path='scaler.pkl'):
-    # Get the directory where this script resides
-    base_dir = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))  # This points to '/workspaces/SkyCast'
-    full_model_path = os.path.join(base_dir, model_path)  # Save in the root directory
-    full_scaler_path = os.path.join(base_dir, scaler_path)  # Save in the root directory
+    # Save the model to disk
+    joblib.dump(model, 'flight_delay_predictor_model.pkl')
 
-    with open(full_model_path, 'wb') as f:
-        pickle.dump(model, f)
-    with open(full_scaler_path, 'wb') as f:
-        pickle.dump(scaler, f)
+    # Evaluate the model
+    y_pred = model.predict(X_test)
+    mse = mean_squared_error(y_test, y_pred)
+    print("Mean Squared Error:", mse)
 
-# This block is at the end of your model.py
-if __name__ == "__main__":
-    data = load_data()
-    (X_train, X_test, y_train, y_test), scaler = preprocess_and_split(data)
-    model = train_model(X_train, y_train)
-    save_model_and_scaler(model, scaler)
+# Function to predict delay
+def predict_delay(features):
+    # Load trained model from disk
+    model = joblib.load('flight_delay_predictor_model.pkl')
+    # Predict using the model
+    predicted_delay = model.predict([features])
+    return predicted_delay

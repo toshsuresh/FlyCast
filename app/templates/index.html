@@ -4,18 +4,18 @@
     <title>Flight Delay Predictor</title>
 </head>
 <body>
-    <h1>Check how many minutes your flight will be delayed</h1>
+    <h1>Check if your flight will be delayed</h1>
     <form action="/predict" method="post">
-        <label for="temperature">Temperature (°C):</label>
-        <input type="number" id="temperature" name="temperature" step="0.01"><br><br>
-        <label for="precipitation">Precipitation (mm):</label>
-        <input type="number" id="precipitation" name="precipitation" step="0.01"><br><br>
-        <label for="pressure">Pressure (hPa):</label>
-        <input type="number" id="pressure" name="pressure" step="0.01"><br><br>
-        <label for="visibility">Visibility (km):</label>
-        <input type="number" id="visibility" name="visibility" step="0.01"><br><br>
-        <label for="windspeed">Wind Speed (km/h):</label>
-        <input type="number" id="windspeed" name="windspeed" step="0.01"><br><br>
+        <label for="temperature">Temperature:</label>
+        <input type="text" id="temperature" name="temperature"><br><br>
+        <label for="precipitation">Precipitation:</label>
+        <input type="text" id="precipitation" name="precipitation"><br><br>
+        <label for="pressure">Pressure:</label>
+        <input type="text" id="pressure" name="pressure"><br><br>
+        <label for="visibility">Visibility:</label>
+        <input type="text" id="visibility" name="visibility"><br><br>
+        <label for="windspeed">Wind Speed:</label>
+        <input type="text" id="windspeed" name="windspeed"><br><br>
         <input type="submit" value="Predict Delay">
     </form>
 </body>
