@@ -1,58 +1,43 @@
-import requests
-from datetime import datetime
+import pandas as pd
+from sklearn.model_selection import train_test_split
+from sklearn.ensemble import RandomForestRegressor
+from sklearn.metrics import mean_squared_error
+from sklearn.preprocessing import StandardScaler
+import numpy as np
 
-# Dummy function to fetch weather data
-def fetch_weather(date, airport_code):
-    # This is a placeholder; you need to use your actual API key and handle real data correctly.
-    url = "http://api.openweathermap.org/data/2.5/weather"
-    params = {
-        'appid': 'your_api_key',  # Replace 'your_api_key' with the actual key.
-        'dt': int(datetime.strptime(date, "%Y-%m-%d").timestamp()),
-        'units': 'metric',
-        'q': airport_code  # Assuming airport_code is city name
-    }
+# Load data
+def load_data():
+    data = pd.read_csv('path_to_your_csv/flight_weather_data.csv')
+    return data
+
+# Preprocess and split the data
+def preprocess_data(data):
+    # Fill missing values if any
+    data = data.fillna(method='ffill')
     
-    response = requests.get(url, params=params)
-    if response.status_code == 200:
-        return response.json()  # JSON response
-    else:
-        return None
+    X = data[['HourlyDryBulbTemperature_x', 'HourlyPrecipitation_x', 'HourlyStationPressure_x', 'HourlyVisibility_x', 'HourlyWindSpeed_x']]
+    y = data['departure_delay']
     
-def fetch_flight_data(flight_date, flight_iata):
-    url = "http://api.aviationstack.com/v1/flights"
-    params = {
-        'access_key': 'b3270119e2d16c6e1f317872745fd8ee',  # Your actual API key
-        'flight_iata': flight_iata,
-        'flight_date': flight_date
-    }
-    response = requests.get(url, params=params)
-    flight_info = response.json()
-    print(flight_info)  # Print the entire API response
-    if 'error' in flight_info:
-        # Handle error response from API
-        error_message = flight_info['error'].get('info', 'Unknown error occurred')
-        print("Error:", error_message)
-        return None
-    else:
-        # Process the flight_info as needed for your prediction model
-        return flight_info
+    # Normalize features
+    scaler = StandardScaler()
+    X_scaled = scaler.fit_transform(X)
+    
+    return train_test_split(X_scaled, y, test_size=0.2, random_state=42)
 
+# Train the model
+def train_model(X_train, y_train):
+    model = RandomForestRegressor(n_estimators=100, random_state=42)
+    model.fit(X_train, y_train)
+    return model
 
+# Predict delay
+def predict_delay(model, X):
+    predicted_delay = model.predict(X)
+    return predicted_delay
 
-def prepare_features(weather_data, flight_data):
-    features = {}
-    if weather_data:
-        features['temp'] = weather_data['main']['temp']
-        features['condition'] = weather_data['weather'][0]['main']  # 'Rain', 'Clear', etc.
-    if flight_data and 'data' in flight_data and len(flight_data['data']) > 0:
-        # Assuming the API returns whether the last flight was delayed
-        features['recent_delay'] = flight_data['data'][0]['delay'] > 0
-    return features
+# Example usage in your app
+data = load_data()
+X_train, X_test, y_train, y_test = preprocess_data(data)
+model = train_model(X_train, y_train)
 
-def predict_delay(features):
-    # Simple rules based on new features
-    if features.get('temp', 10) < 0 or features.get('condition') in ['Snow', 'Rain']:
-        return True
-    elif features.get('recent_delay', False):
-        return True
-    return False
+# Now you can use 'model' to predict using new data processed similarly to X_test
