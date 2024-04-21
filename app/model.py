@@ -41,6 +41,6 @@ def predict_delay(features):
 
     # Scale features
     features_scaled = scaler.transform(features_df)
-    
+
     predicted_delay = model.predict(features_scaled)
     return predicted_delay

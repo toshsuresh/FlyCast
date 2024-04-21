@@ -4,4 +4,4 @@ scikit-learn
 joblib
 requests
 geopy
-flask-cors  
+flask-cors

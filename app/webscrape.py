@@ -1,4 +1,3 @@
-# app/webscrape.py
 import requests
 from datetime import datetime, timezone
 from geopy.geocoders import Nominatim
