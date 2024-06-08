@@ -7,7 +7,7 @@ from sklearn.preprocessing import StandardScaler
 import joblib
 
 def load_and_train():
-    csv_path = os.path.join(os.path.dirname(__file__), 'flight_weather_data.csv')
+    csv_path = os.path.join(os.path.dirname(__file__), '..', 'Flightweatherdata1.csv')
     df = pd.read_csv(csv_path)
     features = df[['HourlyDryBulbTemperature_x', 'HourlyPrecipitation_x', 'HourlyStationPressure_x', 'HourlyVisibility_x', 'HourlyWindSpeed_x']]
     target = df['departure_delay']
@@ -30,17 +30,21 @@ def predict_delay(features):
     scaler_path = os.path.join(os.path.dirname(__file__), 'scaler.pkl')
 
     if not os.path.exists(model_path) or not os.path.exists(scaler_path):
+        print("Model or scaler file does not exist.")
         return "Model or scaler file does not exist."
 
     model = joblib.load(model_path)
     scaler = joblib.load(scaler_path)
 
-    # Ensure feature names match training data
     feature_names = ['HourlyDryBulbTemperature_x', 'HourlyPrecipitation_x', 'HourlyStationPressure_x', 'HourlyVisibility_x', 'HourlyWindSpeed_x']
     features_df = pd.DataFrame([features], columns=feature_names)
 
-    # Scale features
+    print("Features DataFrame:", features_df)  # Debugging output
+
     features_scaled = scaler.transform(features_df)
 
+    print("Scaled Features:", features_scaled)  # Debugging output
+
     predicted_delay = model.predict(features_scaled)
+    print("Predicted Delay:", predicted_delay)  # Debugging output
     return predicted_delay
