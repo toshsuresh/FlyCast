@@ -7,7 +7,7 @@ from sklearn.preprocessing import StandardScaler
 import joblib
 
 def load_and_train():
-    csv_path = os.path.join(os.path.dirname(__file__), '..', 'Flightweatherdata1.csv')
+    csv_path = os.path.join(os.path.dirname(__file__), '..', 'flight_weather_data.csv')
     df = pd.read_csv(csv_path)
     features = df[['HourlyDryBulbTemperature_x', 'HourlyPrecipitation_x', 'HourlyStationPressure_x', 'HourlyVisibility_x', 'HourlyWindSpeed_x']]
     target = df['departure_delay']
