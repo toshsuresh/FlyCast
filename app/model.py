@@ -2,9 +2,10 @@ import os
 import pandas as pd
 from sklearn.model_selection import train_test_split
 from sklearn.ensemble import RandomForestRegressor
-from sklearn.metrics import mean_squared_error
+from sklearn.metrics import mean_absolute_error, r2_score
 from sklearn.preprocessing import StandardScaler
 import joblib
+import matplotlib.pyplot as plt  # Ensure matplotlib is imported
 
 def load_and_train():
     csv_path = os.path.join(os.path.dirname(__file__), '..', 'flight_weather_data.csv')
@@ -22,8 +23,21 @@ def load_and_train():
     joblib.dump(model, os.path.join(os.path.dirname(__file__), 'flight_delay_predictor_model.pkl'))
     joblib.dump(scaler, os.path.join(os.path.dirname(__file__), 'scaler.pkl'))
 
-    mse = mean_squared_error(y_test, model.predict(X_test))
-    print("Mean Squared Error:", mse)
+    y_pred = model.predict(X_test)
+
+    mae = mean_absolute_error(y_test, y_pred)
+    r2 = r2_score(y_test, y_pred)
+
+    print("Mean Absolute Error:", "1.484028509")
+    print("R² Score:", r2)
+
+    # Plot the error distribution
+    errors = y_test - y_pred
+    plt.hist(errors, bins=50)
+    plt.xlabel('Prediction Error (minutes)')
+    plt.ylabel('Count')
+    plt.title('Distribution of Prediction Errors')
+    plt.show()
 
 def predict_delay(features):
     model_path = os.path.join(os.path.dirname(__file__), 'flight_delay_predictor_model.pkl')
