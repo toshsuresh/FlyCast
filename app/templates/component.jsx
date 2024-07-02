@@ -1,67 +1,154 @@
 import React, { useState } from 'react';
 
-export default function Component() {
-    const [city, setCity] = useState('');
-    const [departureTime, setDepartureTime] = useState('');
-    const [result, setResult] = useState('');
+const Navbar = () => (
+  <nav className="bg-blue-600 text-white p-4">
+    <div className="container mx-auto flex justify-between items-center">
+      <h1 className="text-2xl font-bold">SkyCast</h1>
+      <ul className="flex space-x-4">
+        <li><a href="#" className="hover:text-blue-200">Home</a></li>
+        <li><a href="#" className="hover:text-blue-200">About</a></li>
+        <li><a href="#" className="hover:text-blue-200">Contact</a></li>
+      </ul>
+    </div>
+  </nav>
+);
 
-    const handleCityChange = (event) => {
-        setCity(event.target.value);
-    };
+const Footer = () => (
+  <footer className="bg-gray-800 text-white p-4 mt-8">
+    <div className="container mx-auto text-center">
+      <p>&copy; 2024 SkyCast Flight Delay Predictor. All rights reserved.</p>
+    </div>
+  </footer>
+);
 
-    const handleDepartureTimeChange = (event) => {
-        setDepartureTime(event.target.value);
-    };
+const PredictionForm = ({ onSubmit, loading }) => {
+  const [city, setCity] = useState('');
+  const [departureTime, setDepartureTime] = useState('');
 
-    const handleSubmit = async (event) => {
-        event.preventDefault();
-        try {
-            const response = await fetch('/predict', {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json'
-                },
-                body: JSON.stringify({ city, departure_time: departureTime })
-            });
-            const data = await response.json();
-            const prediction = parseFloat(data.delayed_minutes).toFixed(2); // Truncate and round to 2 decimal places
-            setResult(`Prediction: ${prediction} minutes delay`);
-        } catch (error) {
-            console.error('Error:', error);
-            setResult('Failed to predict the delay. Please try again.');
-        }
-    };
+  const handleSubmit = (e) => {
+    e.preventDefault();
+    onSubmit(city, departureTime);
+  };
 
-    return (
-        <div>
-            <h1>Check if your flight will be delayed</h1>
-            <form onSubmit={handleSubmit}>
-                <label htmlFor="city">City:</label>
-                <input
-                    type="text"
-                    id="city"
-                    name="city"
-                    value={city}
-                    onChange={handleCityChange}
-                    required
-                /><br/><br/>
-                <label htmlFor="departure_time">Departure Time:</label>
-                <input
-                    type="datetime-local"
-                    id="departure_time"
-                    name="departure_time"
-                    value={departureTime}
-                    onChange={handleDepartureTimeChange}
-                    required
-                /><br/><br/>
-                <input type="submit" value="Predict Delay" />
-            </form>
-            <div>{result}</div>
-            <div className="image-container">
-                <img src="https://source.unsplash.com/random/800x600?airplane" alt="Airplane" />
-                <img src="https://source.unsplash.com/random/800x600?weather" alt="Weather" />
-                <img src="https://source.unsplash.com/random/800x600?clock" alt="Clock" />
-            </div>
+  return (
+    <form onSubmit={handleSubmit} className="space-y-4 bg-white p-6 rounded-lg shadow-lg">
+      <div>
+        <label htmlFor="city" className="block text-sm font-medium text-gray-700">City</label>
+        <input
+          type="text"
+          id="city"
+          value={city}
+          onChange={(e) => setCity(e.target.value)}
+          required
+          className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-300 focus:ring focus:ring-blue-200 focus:ring-opacity-50"
+          placeholder="Enter city name"
+        />
+      </div>
+      <div>
+        <label htmlFor="departure_time" className="block text-sm font-medium text-gray-700">Departure Time</label>
+        <input
+          type="datetime-local"
+          id="departure_time"
+          value={departureTime}
+          onChange={(e) => setDepartureTime(e.target.value)}
+          required
+          className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-300 focus:ring focus:ring-blue-200 focus:ring-opacity-50"
+        />
+      </div>
+      <button
+        type="submit"
+        disabled={loading}
+        className={`w-full py-2 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 ${
+          loading ? 'opacity-50 cursor-not-allowed' : ''
+        }`}
+      >
+        {loading ? 'Predicting...' : 'Predict Delay'}
+      </button>
+    </form>
+  );
+};
+
+const ResultDisplay = ({ result, error }) => (
+  <div className="mt-4">
+    {error && (
+      <div className="p-4 bg-red-100 border border-red-400 text-red-700 rounded-md">
+        {error}
+      </div>
+    )}
+    {result && (
+      <div className="p-4 bg-green-100 border border-green-400 text-green-700 rounded-md">
+        Estimated delay: <strong>{result}</strong>
+      </div>
+    )}
+  </div>
+);
+
+const FeatureCard = ({ title, description }) => (
+  <div className="bg-white p-6 rounded-lg shadow-md">
+    <h3 className="text-lg font-semibold mb-2">{title}</h3>
+    <p className="text-gray-600">{description}</p>
+  </div>
+);
+
+export default function SkyCastPredictor() {
+  const [result, setResult] = useState(null);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState('');
+
+  const handleSubmit = async (city, departureTime) => {
+    setLoading(true);
+    setError('');
+    setResult(null);
+
+    try {
+      const response = await fetch('/predict', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ city, departure_time: departureTime })
+      });
+      
+      if (!response.ok) {
+        throw new Error('Failed to predict the delay. Please try again.');
+      }
+
+      const data = await response.json();
+      const prediction = parseFloat(data.delayed_minutes).toFixed(2);
+      setResult(`${prediction} minutes`);
+    } catch (error) {
+      console.error('Error:', error);
+      setError(error.message);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  return (
+    <div className="min-h-screen flex flex-col bg-gray-100">
+      <Navbar />
+      <main className="flex-grow container mx-auto px-4 py-8">
+        <h1 className="text-4xl font-bold mb-8 text-center text-blue-600">SkyCast Flight Delay Predictor</h1>
+        <div className="grid md:grid-cols-2 gap-8">
+          <div>
+            <PredictionForm onSubmit={handleSubmit} loading={loading} />
+            <ResultDisplay result={result} error={error} />
+          </div>
+          <div className="space-y-4">
+            <FeatureCard 
+              title="Accurate Predictions" 
+              description="Our advanced algorithm considers multiple factors to provide precise delay estimates."
+            />
+            <FeatureCard 
+              title="Real-time Data" 
+              description="We use up-to-date weather and flight information for the most current predictions."
+            />
+            <FeatureCard 
+              title="User-Friendly" 
+              description="Simple interface makes it easy to get the information you need quickly."
+            />
+          </div>
         </div>
-    );
+      </main>
+      <Footer />
+    </div>
+  );
 }
