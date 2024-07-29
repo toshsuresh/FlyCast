@@ -80,4 +80,4 @@ For any inquiries or feedback, please reach out to us at [akhil.metukuru2016@gma
 ---
 
 Thank you for using SkyCast! We hope it provides valuable insights for your flight planning needs.
-```
+
