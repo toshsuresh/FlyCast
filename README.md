@@ -1,6 +1,4 @@
-Sure, here is the README content formatted for you to easily copy and paste:
 
-```markdown
 # SkyCast: Flight Delay Predictor
 
 **Technologies Used:** Flask, React, Pandas, Scikit-Learn
@@ -77,11 +75,9 @@ This project is licensed under the MIT License. See the [LICENSE](LICENSE) file 
 
 ## Contact
 
-For any inquiries or feedback, please reach out to us at [your-email@example.com].
+For any inquiries or feedback, please reach out to us at [akhil.metukuru2016@gmail.com].
 
 ---
 
 Thank you for using SkyCast! We hope it provides valuable insights for your flight planning needs.
 ```
-
-Replace the placeholders such as `your-username` and `your-email@example.com` with your actual GitHub username and contact email. Also, you might need to add a `requirements.txt` file for the Python dependencies and ensure that the frontend setup steps are aligned with your project structure.
