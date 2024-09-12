@@ -5,3 +5,7 @@ joblib
 requests
 geopy
 flask-cors
+matplotlib
+scikit-learn
+xgboost
+scipy

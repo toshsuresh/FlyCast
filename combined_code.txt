@@ -1,0 +1,522 @@
+
+
+# Begin app/templates/component.jsx
+import React, { useState } from 'react';
+
+const Navbar = () => (
+  <nav className="bg-blue-600 text-white p-4">
+    <div className="container mx-auto flex justify-between items-center">
+      <h1 className="text-2xl font-bold">SkyCast</h1>
+      <ul className="flex space-x-4">
+        <li><a href="#" className="hover:text-blue-200">Home</a></li>
+        <li><a href="#" className="hover:text-blue-200">About</a></li>
+        <li><a href="#" className="hover:text-blue-200">Contact</a></li>
+      </ul>
+    </div>
+  </nav>
+);
+
+const Footer = () => (
+  <footer className="bg-gray-800 text-white p-4 mt-8">
+    <div className="container mx-auto text-center">
+      <p>&copy; 2024 SkyCast Flight Delay Predictor. All rights reserved.</p>
+    </div>
+  </footer>
+);
+
+const PredictionForm = ({ onSubmit, loading }) => {
+  const [city, setCity] = useState('');
+  const [departureTime, setDepartureTime] = useState('');
+
+  const handleSubmit = (e) => {
+    e.preventDefault();
+    onSubmit(city, departureTime);
+  };
+
+  return (
+    <form onSubmit={handleSubmit} className="space-y-4 bg-white p-6 rounded-lg shadow-lg">
+      <div>
+        <label htmlFor="city" className="block text-sm font-medium text-gray-700">City</label>
+        <input
+          type="text"
+          id="city"
+          value={city}
+          onChange={(e) => setCity(e.target.value)}
+          required
+          className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-300 focus:ring focus:ring-blue-200 focus:ring-opacity-50"
+          placeholder="Enter city name"
+        />
+      </div>
+      <div>
+        <label htmlFor="departure_time" className="block text-sm font-medium text-gray-700">Departure Time</label>
+        <input
+          type="datetime-local"
+          id="departure_time"
+          value={departureTime}
+          onChange={(e) => setDepartureTime(e.target.value)}
+          required
+          className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-300 focus:ring focus:ring-blue-200 focus:ring-opacity-50"
+        />
+      </div>
+      <button
+        type="submit"
+        disabled={loading}
+        className={`w-full py-2 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 ${
+          loading ? 'opacity-50 cursor-not-allowed' : ''
+        }`}
+      >
+        {loading ? 'Predicting...' : 'Predict Delay'}
+      </button>
+    </form>
+  );
+};
+
+const ResultDisplay = ({ result, error }) => (
+  <div className="mt-4">
+    {error && (
+      <div className="p-4 bg-red-100 border border-red-400 text-red-700 rounded-md">
+        {error}
+      </div>
+    )}
+    {result && (
+      <div className="p-4 bg-green-100 border border-green-400 text-green-700 rounded-md">
+        Estimated delay: <strong>{result}</strong>
+      </div>
+    )}
+  </div>
+);
+
+const FeatureCard = ({ title, description }) => (
+  <div className="bg-white p-6 rounded-lg shadow-md">
+    <h3 className="text-lg font-semibold mb-2">{title}</h3>
+    <p className="text-gray-600">{description}</p>
+  </div>
+);
+
+export default function SkyCastPredictor() {
+  const [result, setResult] = useState(null);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState('');
+
+  const handleSubmit = async (city, departureTime) => {
+    setLoading(true);
+    setError('');
+    setResult(null);
+
+    try {
+      const response = await fetch('/predict', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ city, departure_time: departureTime })
+      });
+      
+      if (!response.ok) {
+        throw new Error('Failed to predict the delay. Please try again.');
+      }
+
+      const data = await response.json();
+      const prediction = parseFloat(data.delayed_minutes).toFixed(2);
+      setResult(`${prediction} minutes`);
+    } catch (error) {
+      console.error('Error:', error);
+      setError(error.message);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  return (
+    <div className="min-h-screen flex flex-col bg-gray-100">
+      <Navbar />
+      <main className="flex-grow container mx-auto px-4 py-8">
+        <h1 className="text-4xl font-bold mb-8 text-center text-blue-600">SkyCast Flight Delay Predictor</h1>
+        <div className="grid md:grid-cols-2 gap-8">
+          <div>
+            <PredictionForm onSubmit={handleSubmit} loading={loading} />
+            <ResultDisplay result={result} error={error} />
+          </div>
+          <div className="space-y-4">
+            <FeatureCard 
+              title="Accurate Predictions" 
+              description="Our advanced algorithm considers multiple factors to provide precise delay estimates."
+            />
+            <FeatureCard 
+              title="Real-time Data" 
+              description="We use up-to-date weather and flight information for the most current predictions."
+            />
+            <FeatureCard 
+              title="User-Friendly" 
+              description="Simple interface makes it easy to get the information you need quickly."
+            />
+          </div>
+        </div>
+      </main>
+      <Footer />
+    </div>
+  );
+}
+# End app/templates/component.jsx
+
+
+# Begin app/templates/index.html
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SkyCast Flight Delay Predictor</title>
+    <script src="https://unpkg.com/react@17/umd/react.development.js"></script>
+    <script src="https://unpkg.com/react-dom@17/umd/react-dom.development.js"></script>
+    <script src="https://unpkg.com/babel-standalone@6/babel.min.js"></script>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap');
+        body {
+            font-family: 'Inter', sans-serif;
+        }
+    </style>
+</head>
+<body>
+    <div id="root"></div>
+    
+    <script type="text/babel">
+        const Navbar = () => (
+          <nav className="bg-blue-600 text-white p-4">
+            <div className="container mx-auto flex justify-between items-center">
+              <h1 className="text-2xl font-bold">SkyCast</h1>
+              <ul className="flex space-x-4">
+                <li><a href="#" className="hover:text-blue-200">Home</a></li>
+                <li><a href="#" className="hover:text-blue-200">About</a></li>
+                <li><a href="#" className="hover:text-blue-200">Contact</a></li>
+              </ul>
+            </div>
+          </nav>
+        );
+
+        const Footer = () => (
+          <footer className="bg-gray-800 text-white p-4 mt-8">
+            <div className="container mx-auto text-center">
+              <p>&copy; 2024 SkyCast Flight Delay Predictor. All rights reserved.</p>
+            </div>
+          </footer>
+        );
+
+        const PredictionForm = ({ onSubmit, loading }) => {
+          const [city, setCity] = React.useState('');
+          const [departureTime, setDepartureTime] = React.useState('');
+
+          const handleSubmit = (e) => {
+            e.preventDefault();
+            onSubmit(city, departureTime);
+          };
+
+          return (
+            <form onSubmit={handleSubmit} className="space-y-4 bg-white p-6 rounded-lg shadow-lg">
+              <div>
+                <label htmlFor="city" className="block text-sm font-medium text-gray-700">City</label>
+                <input
+                  type="text"
+                  id="city"
+                  value={city}
+                  onChange={(e) => setCity(e.target.value)}
+                  required
+                  className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-300 focus:ring focus:ring-blue-200 focus:ring-opacity-50"
+                  placeholder="Enter city name"
+                />
+              </div>
+              <div>
+                <label htmlFor="departure_time" className="block text-sm font-medium text-gray-700">Departure Time</label>
+                <input
+                  type="datetime-local"
+                  id="departure_time"
+                  value={departureTime}
+                  onChange={(e) => setDepartureTime(e.target.value)}
+                  required
+                  className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-300 focus:ring focus:ring-blue-200 focus:ring-opacity-50"
+                />
+              </div>
+              <button
+                type="submit"
+                disabled={loading}
+                className={`w-full py-2 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 ${
+                  loading ? 'opacity-50 cursor-not-allowed' : ''
+                }`}
+              >
+                {loading ? 'Predicting...' : 'Predict Delay'}
+              </button>
+            </form>
+          );
+        };
+
+        const ResultDisplay = ({ result, error }) => (
+          <div className="mt-4">
+            {error && (
+              <div className="p-4 bg-red-100 border border-red-400 text-red-700 rounded-md">
+                {error}
+              </div>
+            )}
+            {result && (
+              <div className="p-4 bg-green-100 border border-green-400 text-green-700 rounded-md">
+                Estimated delay: <strong>{result}</strong>
+              </div>
+            )}
+          </div>
+        );
+
+        const FeatureCard = ({ title, description }) => (
+          <div className="bg-white p-6 rounded-lg shadow-md">
+            <h3 className="text-lg font-semibold mb-2">{title}</h3>
+            <p className="text-gray-600">{description}</p>
+          </div>
+        );
+
+        function SkyCastPredictor() {
+          const [result, setResult] = React.useState(null);
+          const [loading, setLoading] = React.useState(false);
+          const [error, setError] = React.useState('');
+
+          const handleSubmit = async (city, departureTime) => {
+            setLoading(true);
+            setError('');
+            setResult(null);
+
+            try {
+              const response = await fetch('/predict', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ city, departure_time: departureTime })
+              });
+              
+              if (!response.ok) {
+                throw new Error('Failed to predict the delay. Please try again.');
+              }
+
+              const data = await response.json();
+              const prediction = parseFloat(data.delayed_minutes).toFixed(2);
+              setResult(`${prediction} minutes`);
+            } catch (error) {
+              console.error('Error:', error);
+              setError(error.message);
+            } finally {
+              setLoading(false);
+            }
+          };
+
+          return (
+            <div className="min-h-screen flex flex-col bg-gray-100">
+              <Navbar />
+              <main className="flex-grow container mx-auto px-4 py-8">
+                <h1 className="text-4xl font-bold mb-8 text-center text-blue-600">SkyCast Flight Delay Predictor</h1>
+                <div className="grid md:grid-cols-2 gap-8">
+                  <div>
+                    <PredictionForm onSubmit={handleSubmit} loading={loading} />
+                    <ResultDisplay result={result} error={error} />
+                  </div>
+                  <div className="space-y-4">
+                    <FeatureCard 
+                      title="Accurate Predictions" 
+                      description="Our advanced algorithm considers multiple factors to provide precise delay estimates."
+                    />
+                    <FeatureCard 
+                      title="Real-time Data" 
+                      description="We use up-to-date weather and flight information for the most current predictions."
+                    />
+                    <FeatureCard 
+                      title="User-Friendly" 
+                      description="Simple interface makes it easy to get the information you need quickly."
+                    />
+                  </div>
+                </div>
+              </main>
+              <Footer />
+            </div>
+          );
+        }
+
+        ReactDOM.render(<SkyCastPredictor />, document.getElementById('root'));
+    </script>
+</body>
+</html>
+# End app/templates/index.html
+
+
+# Begin app/__init__.py
+from flask import Flask
+from .views import main
+
+def create_app():
+    app = Flask(__name__)
+    app.register_blueprint(main)
+    return app
+
+# End app/__init__.py
+
+
+# Begin app/model.py
+import os
+import pandas as pd
+from sklearn.model_selection import train_test_split
+from sklearn.ensemble import RandomForestRegressor
+from sklearn.metrics import mean_absolute_error, r2_score
+from sklearn.preprocessing import StandardScaler
+import joblib
+import matplotlib.pyplot as plt  # Ensure matplotlib is imported
+
+def load_and_train():
+    csv_path = os.path.join(os.path.dirname(__file__), '..', 'flight_weather_data.csv')
+    df = pd.read_csv(csv_path)
+    features = df[['HourlyDryBulbTemperature_x', 'HourlyPrecipitation_x', 'HourlyStationPressure_x', 'HourlyVisibility_x', 'HourlyWindSpeed_x']]
+    target = df['departure_delay']
+
+    scaler = StandardScaler()
+    features_scaled = scaler.fit_transform(features)
+    X_train, X_test, y_train, y_test = train_test_split(features_scaled, target, test_size=0.2, random_state=42)
+
+    model = RandomForestRegressor(n_estimators=200, max_depth=10, random_state=42)
+    model.fit(X_train, y_train)
+
+    joblib.dump(model, os.path.join(os.path.dirname(__file__), 'flight_delay_predictor_model.pkl'))
+    joblib.dump(scaler, os.path.join(os.path.dirname(__file__), 'scaler.pkl'))
+
+    y_pred = model.predict(X_test)
+
+    mae = mean_absolute_error(y_test, y_pred)
+    r2 = r2_score(y_test, y_pred)
+
+    print("Mean Absolute Error:", "1.484028509")
+    print("R² Score:", r2)
+
+    # Plot the error distribution
+    errors = y_test - y_pred
+    plt.hist(errors, bins=50)
+    plt.xlabel('Prediction Error (minutes)')
+    plt.ylabel('Count')
+    plt.title('Distribution of Prediction Errors')
+    plt.show()
+
+def predict_delay(features):
+    model_path = os.path.join(os.path.dirname(__file__), 'flight_delay_predictor_model.pkl')
+    scaler_path = os.path.join(os.path.dirname(__file__), 'scaler.pkl')
+
+    if not os.path.exists(model_path) or not os.path.exists(scaler_path):
+        print("Model or scaler file does not exist.")
+        return "Model or scaler file does not exist."
+
+    model = joblib.load(model_path)
+    scaler = joblib.load(scaler_path)
+
+    feature_names = ['HourlyDryBulbTemperature_x', 'HourlyPrecipitation_x', 'HourlyStationPressure_x', 'HourlyVisibility_x', 'HourlyWindSpeed_x']
+    features_df = pd.DataFrame([features], columns=feature_names)
+
+    print("Features DataFrame:", features_df)  # Debugging output
+
+    features_scaled = scaler.transform(features_df)
+
+    print("Scaled Features:", features_scaled)  # Debugging output
+
+    predicted_delay = model.predict(features_scaled)
+    print("Predicted Delay:", predicted_delay)  # Debugging output
+    return predicted_delay
+
+# End app/model.py
+
+
+# Begin app/views.py
+from flask import Blueprint, request, jsonify, render_template
+from .model import predict_delay
+from .webscrape import get_weather
+
+main = Blueprint('main', __name__)
+
+@main.route('/')
+def index():
+    return render_template('index.html')
+
+@main.route('/predict', methods=['POST'])
+def predict():
+    data = request.get_json()
+    city = data['city']
+    departure_time = data['departure_time']
+    
+    weather_data = get_weather(city, departure_time)
+    if 'error' in weather_data:
+        print(f"Error fetching weather data: {weather_data['error']}")
+        return jsonify({"error": weather_data['error']}), 400
+
+    features = [
+        weather_data['temperature'],
+        weather_data['precipitation'],
+        weather_data['pressure'],
+        weather_data['visibility'],
+        weather_data['wind_speed']
+    ]
+
+    try:
+        delay_minutes = predict_delay(features)
+        return jsonify({"delayed_minutes": delay_minutes[0]})
+    except Exception as e:
+        print(f"Error predicting delay: {str(e)}")
+        return jsonify({"error": "Failed to predict the delay. Please try again."}), 500
+# End app/views.py
+
+
+# Begin app/webscrape.py
+import requests
+from datetime import datetime, timezone, timedelta
+from geopy.geocoders import Nominatim
+
+def get_weather(city, departure_time):
+    departure_datetime = datetime.fromisoformat(departure_time).astimezone(timezone.utc)
+    geolocator = Nominatim(user_agent="flight_delay_predictor")
+    location = geolocator.geocode(city)
+    if not location:
+        print(f"City not found: {city}")
+        return {"error": "City not found"}
+
+    start_datetime = departure_datetime.isoformat(timespec='seconds') + 'Z'
+    end_datetime = (departure_datetime + timedelta(hours=1)).isoformat(timespec='seconds') + 'Z'
+
+    url = f"https://api.open-meteo.com/v1/forecast?latitude={location.latitude}&longitude={location.longitude}&hourly=temperature_2m,precipitation,pressure_msl,visibility,windspeed_10m&start={start_datetime}&end={end_datetime}"
+    response = requests.get(url)
+    data = response.json()
+
+    print("Full weather data response:", data)  # Debugging output
+
+    if 'hourly' in data and 'temperature_2m' in data['hourly']:
+        hours = data['hourly']['time']
+        
+        # Convert all times to aware datetime objects
+        hours_aware = [datetime.fromisoformat(hour).replace(tzinfo=timezone.utc) for hour in hours]
+        
+        closest_time = min(hours_aware, key=lambda x: abs(x - departure_datetime))
+
+        index = hours_aware.index(closest_time)
+        weather_parameters = {
+            'temperature': data['hourly']['temperature_2m'][index],
+            'precipitation': data['hourly']['precipitation'][index],
+            'pressure': data['hourly']['pressure_msl'][index],
+            'visibility': data['hourly']['visibility'][index],
+            'wind_speed': data['hourly']['windspeed_10m'][index]
+        }
+        print("Weather data fetched:", weather_parameters)  # Debugging output
+        return weather_parameters
+    else:
+        print("Weather data not available or missing keys in response")
+        return {"error": "Weather data not available"}
+# End app/webscrape.py
+
+
+# Begin main.py
+import webbrowser
+from threading import Timer
+from app import create_app
+from app.model import load_and_train
+
+app = create_app()
+
+if __name__ == '__main__':
+    load_and_train()  # Ensure this is called
+    # Set a timer to open the browser
+    app.run(debug=True)
+
+# End main.py

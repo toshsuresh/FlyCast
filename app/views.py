@@ -16,9 +16,9 @@ def predict():
     
     weather_data = get_weather(city, departure_time)
     if 'error' in weather_data:
+        print(f"Error fetching weather data: {weather_data['error']}")
         return jsonify({"error": weather_data['error']}), 400
 
-    # Ensure the features are correctly named and ordered
     features = [
         weather_data['temperature'],
         weather_data['precipitation'],
@@ -27,6 +27,9 @@ def predict():
         weather_data['wind_speed']
     ]
 
-    # Call predict_delay with the correct features
-    delay_minutes = predict_delay(features)
-    return jsonify({"delayed_minutes": delay_minutes[0]})
+    try:
+        delay_minutes = predict_delay(features)
+        return jsonify({"delayed_minutes": delay_minutes[0]})
+    except Exception as e:
+        print(f"Error predicting delay: {str(e)}")
+        return jsonify({"error": "Failed to predict the delay. Please try again."}), 500
